@@ -14,29 +14,51 @@
             margin: 0;
             padding: 0;
         }
+        .fullscreen-scanner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 1000;
+        }
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
+    <div id="scannerContainer" class="fullscreen-scanner" style="display: none;">
+        <div class="close-button" onclick="closeScanner()">Close</div>
+    </div>
     <div class="w100 vh100 flex middle center " style="background-color: var(--primary-light);">
         <div class="flex gap-1 middle">
             <button id="scanNowButton">Scan Now</button>
             <div class="open-when-click-scan-now flex gap-1 middle">
-                <button id="scanButton" style="display: none;">Scan</button>
                 <button id="torchButton" style="display: none;">Torch</button>
             </div>
         </div>
     </div>
-    <script src="html5-qrcode.min.js"></script>
     <script>
-        // Function to open scanner
+        let qrCodeScanner;
+
         function openScanner() {
-            // Display scan and torch buttons
-            document.getElementById("scanButton").style.display = "block";
+            // Display torch button
             document.getElementById("torchButton").style.display = "block";
 
+            // Display fullscreen scanner
+            document.getElementById("scannerContainer").style.display = "block";
+
             // Create QR code scanner instance
-            const html5QrCode = new Html5Qrcode("scanButton");
+            qrCodeScanner = new Html5Qrcode("scannerContainer");
 
             // Start scanning
-            html5QrCode.start(
+            qrCodeScanner.start(
                 { facingMode: "environment" }, // scan using rear camera
                 {
                     fps: 10,    // Optional frame per seconds for qr code scanning
@@ -54,6 +76,20 @@
                     // Promise catch block
                     console.error(`Error while starting QR code scanner: ${err}`);
                 });
+        }
+
+        function closeScanner() {
+            // Hide fullscreen scanner
+            document.getElementById("scannerContainer").style.display = "none";
+
+            // Stop scanning
+            if (qrCodeScanner) {
+                qrCodeScanner.stop().then(() => {
+                    qrCodeScanner.clear();
+                }).catch(err => {
+                    console.error(`Error while stopping QR code scanner: ${err}`);
+                });
+            }
         }
 
         // Function to toggle torch
