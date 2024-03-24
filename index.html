@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +10,6 @@
         integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
-
 <body>
     <style>
         * {
@@ -52,6 +50,7 @@
     </div>
     <script>
         let qrCodeScanner;
+        let torchEnabled = false;
 
         function openScanner() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -60,8 +59,8 @@
             }
 
             // Check if torch is supported by the browser
-            if (!('torch' in navigator.mediaDevices.getSupportedConstraints())) {
-                console.error("Torch is not supported by the camera");
+            if (!('ImageCapture' in window)) {
+                console.error("ImageCapture API is not supported in this browser");
                 return;
             }
 
@@ -111,28 +110,23 @@
 
         // Function to toggle torch
         function toggleTorch() {
-            if (!('torch' in navigator.mediaDevices.getSupportedConstraints())) {
-                console.error("Torch is not supported by the camera");
+            if (!qrCodeScanner) {
+                console.error("QR Code scanner not initialized");
                 return;
             }
 
-            // Check if torch is supported by the browser
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then((stream) => {
-                    const track = stream.getVideoTracks()[0];
+            const track = qrCodeScanner.getMediaStream().getVideoTracks()[0];
+            const imageCapture = new ImageCapture(track);
 
-                    // Toggle the torch
-                    track.applyConstraints({ advanced: [{ torch: !track.getSettings().torch }] })
-                        .then(() => {
-                            console.log("Torch toggled successfully");
-                        })
-                        .catch((error) => {
-                            console.error("Failed to toggle torch:", error);
-                        });
-                })
-                .catch((error) => {
-                    console.error("Failed to access camera:", error);
-                });
+            if (torchEnabled) {
+                imageCapture.setOptions({ fillLightMode: "off" });
+                torchEnabled = false;
+                console.log("Torch turned off");
+            } else {
+                imageCapture.setOptions({ fillLightMode: "torch" });
+                torchEnabled = true;
+                console.log("Torch turned on");
+            }
         }
 
         // Attach event listener to "scan now" button
@@ -142,5 +136,4 @@
         document.getElementById("torchButton").addEventListener("click", toggleTorch);
     </script>
 </body>
-
 </html>
