@@ -39,23 +39,27 @@ toggleButton.addEventListener('click', () => {
     }
 });
 
+let stream = null;
+let track = null;
+
 function turnOnFlashlight() {
-    if ('torch' in navigator) {
-        navigator.torch.enable()
-            .then(() => console.log('Flashlight turned on'))
-            .catch(() => console.error('Failed to turn on flashlight'));
-    } else {
-        console.error('Torch not supported');
-    }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then((mediaStream) => {
+            stream = mediaStream;
+            const track = mediaStream.getVideoTracks()[0];
+            track.applyConstraints({ advanced: [{ torch: true }] });
+        })
+        .catch((error) => {
+            console.error('Failed to turn on flashlight:', error);
+        });
 }
 
 function turnOffFlashlight() {
-    if ('torch' in navigator) {
-        navigator.torch.disable()
-            .then(() => console.log('Flashlight turned off'))
-            .catch(() => console.error('Failed to turn off flashlight'));
-    } else {
-        console.error('Torch not supported');
+    if (stream) {
+        const track = stream.getVideoTracks()[0];
+        track.applyConstraints({ advanced: [{ torch: false }] });
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
     }
 }
 </script>
