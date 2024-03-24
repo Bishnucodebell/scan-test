@@ -36,7 +36,7 @@
     <div id="scannerContainer" class="fullscreen-scanner" style="display: none;">
         <div class="close-button" onclick="closeScanner()">Close</div>
     </div>
-    <div class="w100 vh100 flex middle center " style="background-color: var(--primary-light);">
+    <div class=" flex middle center " style="background-color: var(--primary-light);height: 50vh;">
         <div class="flex gap-1 middle">
             <button id="scanNowButton">Scan Now</button>
             <div class="open-when-click-scan-now flex gap-1 middle">
@@ -94,24 +94,29 @@
 
         // Function to toggle torch
         function toggleTorch() {
-            // Check if torch is supported by the browser
-            if ('torch' in navigator) {
-                // Toggle torch
-                navigator.torch.toggle()
-                    .then((enabled) => {
-                        if (enabled) {
-                            console.log("Torch turned on.");
-                        } else {
-                            console.log("Torch turned off.");
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Failed to toggle torch:", error);
+    // Check if torch is supported by the browser
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // Get user media with video enabled
+        navigator.mediaDevices.getUserMedia({ video: { torch: true } })
+            .then((stream) => {
+                // Torch is activated
+                console.log("Torch turned on.");
+                // Stop the stream to turn off the torch after a short duration
+                setTimeout(() => {
+                    stream.getTracks().forEach(track => {
+                        track.stop();
                     });
-            } else {
-                console.error("Torch feature not supported in this browser");
-            }
-        }
+                    console.log("Torch turned off.");
+                }, 2000); // Stop the torch after 2 seconds
+            })
+            .catch((error) => {
+                console.error("Failed to toggle torch:", error);
+            });
+    } else {
+        console.error("Torch feature not supported in this browser");
+    }
+}
+
 
         // Attach event listener to "scan now" button
         document.getElementById("scanNowButton").addEventListener("click", openScanner);
