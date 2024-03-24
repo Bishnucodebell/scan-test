@@ -97,25 +97,48 @@
     // Check if torch is supported by the browser
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         // Get user media with video enabled
-        navigator.mediaDevices.getUserMedia({ video: { torch: true } })
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
             .then((stream) => {
-                // Torch is activated
-                console.log("Torch turned on.");
-                // Stop the stream to turn off the torch after a short duration
-                setTimeout(() => {
-                    stream.getTracks().forEach(track => {
-                        track.stop();
-                    });
-                    console.log("Torch turned off.");
-                }, 2000); // Stop the torch after 2 seconds
+                // Get the video track
+                const track = stream.getVideoTracks()[0];
+
+                // Create an ImageCapture object
+                const imageCapture = new ImageCapture(track);
+
+                // Set the torch mode to true
+                const capabilities = track.getCapabilities();
+                if (capabilities.torch && capabilities.torch === true) {
+                    const settings = track.getSettings();
+                    settings.torch = true;
+                    track.applyConstraints(settings)
+                        .then(() => {
+                            console.log("Torch turned on.");
+                            // Stop the stream to turn off the torch after a short duration
+                            setTimeout(() => {
+                                track.applyConstraints({ advanced: [{ torch: false }] })
+                                    .then(() => {
+                                        console.log("Torch turned off.");
+                                    })
+                                    .catch((error) => {
+                                        console.error("Failed to turn off torch:", error);
+                                    });
+                            }, 2000); // Stop the torch after 2 seconds
+                        })
+                        .catch((error) => {
+                            console.error("Failed to turn on torch:", error);
+                        });
+                } else {
+                    console.error("Torch feature not supported by the camera track");
+                }
             })
             .catch((error) => {
-                console.error("Failed to toggle torch:", error);
+                console.error("Failed to access camera:", error);
             });
     } else {
-        console.error("Torch feature not supported in this browser");
+        console.error("getUserMedia not supported in this browser");
     }
 }
+
 
 
         // Attach event listener to "scan now" button
