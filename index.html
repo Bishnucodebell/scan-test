@@ -6,24 +6,54 @@
     <title>Document</title>
     <link rel="stylesheet" href="layout.css">
     <link rel="stylesheet" href="codebell.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
-    <div class="w100 vh100 flex middle center">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <div class="w100 vh100 flex middle center " style="background-color: var(--primary-light);">
         <div class="flex gap-1 middle">
             <button id="scanNowButton">Scan Now</button>
             <div class="open-when-click-scan-now flex gap-1 middle">
                 <button id="scanButton" style="display: none;">Scan</button>
                 <button id="torchButton" style="display: none;">Torch</button>
             </div>
-        </div> 
+        </div>
     </div>
-    
+    <script src="html5-qrcode.min.js"></script>
     <script>
         // Function to open scanner
         function openScanner() {
             // Display scan and torch buttons
             document.getElementById("scanButton").style.display = "block";
             document.getElementById("torchButton").style.display = "block";
+
+            // Create QR code scanner instance
+            const html5QrCode = new Html5Qrcode("scanButton");
+
+            // Start scanning
+            html5QrCode.start(
+                { facingMode: "environment" }, // scan using rear camera
+                {
+                    fps: 10,    // Optional frame per seconds for qr code scanning
+                    qrbox: 250  // Optional if you want bounded box UI
+                },
+                qrCodeMessage => {
+                    // Callback when QR code is detected
+                    console.log(`QR code detected: ${qrCodeMessage}`);
+                },
+                errorMessage => {
+                    // Callback when error is thrown during QR code scanning
+                    console.error(`Error while scanning QR code: ${errorMessage}`);
+                })
+                .catch(err => {
+                    // Promise catch block
+                    console.error(`Error while starting QR code scanner: ${err}`);
+                });
         }
 
         // Function to toggle torch
@@ -35,10 +65,8 @@
                     .then((enabled) => {
                         if (enabled) {
                             console.log("Torch turned on.");
-                            // Here you can add additional logic if needed
                         } else {
                             console.log("Torch turned off.");
-                            // Here you can add additional logic if needed
                         }
                     })
                     .catch((error) => {
