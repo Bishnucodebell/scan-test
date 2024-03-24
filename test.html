@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashlight App</title>
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<button id="toggleButton">Toggle Flashlight</button>
+
+<script>
+const toggleButton = document.getElementById('toggleButton');
+let flashlightOn = false;
+
+toggleButton.addEventListener('click', () => {
+    flashlightOn = !flashlightOn;
+    if (flashlightOn) {
+        turnOnFlashlight();
+        toggleButton.textContent = 'Turn Off Flashlight';
+    } else {
+        turnOffFlashlight();
+        toggleButton.textContent = 'Turn On Flashlight';
+    }
+});
+
+function turnOnFlashlight() {
+    if ('torch' in navigator) {
+        navigator.torch.enable()
+            .then(() => console.log('Flashlight turned on'))
+            .catch(() => console.error('Failed to turn on flashlight'));
+    } else {
+        console.error('Torch not supported');
+    }
+}
+
+function turnOffFlashlight() {
+    if ('torch' in navigator) {
+        navigator.torch.disable()
+            .then(() => console.log('Flashlight turned off'))
+            .catch(() => console.error('Failed to turn off flashlight'));
+    } else {
+        console.error('Torch not supported');
+    }
+}
+</script>
+</body>
+</html>
