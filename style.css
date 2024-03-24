@@ -1,0 +1,70 @@
+@import "/css/normalize.css";
+@import "/css/animate.min.css";
+
+@import "/css/layout.css";
+@import "/css/codebell.css";
+
+.otp-input-holder {
+    margin: auto;
+    max-width: 100%;
+    width: fit-content;
+    height: 2em;
+    font-size: 1.2rem;
+}
+
+.otp-input-holder input {
+    border: none !important;
+    outline: none !important;
+    background: transparent;
+    caret-color: transparent;
+    letter-spacing: 1.19em;
+    width: 11.4em;
+    padding: 0;
+    padding-left: 1.7em;
+}
+
+.otp-input-holder .otp-flex {
+    order: none !important;
+    height: 2em;
+    display: flex;
+    justify-content: flex-start;
+    gap: 0.2em;
+    flex-direction: row;
+    width: fit-content;
+    margin: auto;
+    margin-bottom: -2em;
+}
+
+.otp-input-holder .otp-box {
+    width: 0.1em;
+    border-radius: 0.5rem;
+    padding: 0.7em !important;
+    border: 1px solid var(--sub-text-color);
+    background: var(--bg-color);
+}
+
+.otp-input-holder .otp-box.active {
+    outline: 2px solid var(--primary-base);
+}
+
+.responsive-form>.flex>input,
+.responsive-form>.flex>.flex-1,
+.responsive-form>.flex>select,
+.responsive-form>.flex>.input,
+.responsive-form img,
+.responsive-form>.flex>label {
+    min-width: calc(250px - 2em);
+    max-width: 100%;
+    flex: 1;
+}
+
+.logo {
+    max-height: 2rem;
+    margin-right: 0.5rem;
+    border-radius: 0.5em;
+}
+
+.logo.big {
+    max-height: 4rem;
+    border-radius: 1em;
+}

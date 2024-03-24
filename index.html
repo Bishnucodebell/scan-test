@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="layout.css">
+    <link rel="stylesheet" href="codebell.css">
+</head>
+<body>
+    <div class="w100 vh100 flex middle center">
+        <div class="flex gap-1 middle">
+            <button id="scanNowButton">Scan Now</button>
+            <div class="open-when-click-scan-now flex gap-1 middle">
+                <button id="scanButton" style="display: none;">Scan</button>
+                <button id="torchButton" style="display: none;">Torch</button>
+            </div>
+        </div> 
+    </div>
+    
+    <script>
+        // Function to open scanner
+        function openScanner() {
+            // Display scan and torch buttons
+            document.getElementById("scanButton").style.display = "block";
+            document.getElementById("torchButton").style.display = "block";
+        }
+
+        // Function to toggle torch
+        function toggleTorch() {
+            // Check if torch is supported by the browser
+            if ('torch' in navigator) {
+                // Toggle torch
+                navigator.torch.toggle()
+                    .then((enabled) => {
+                        if (enabled) {
+                            console.log("Torch turned on.");
+                            // Here you can add additional logic if needed
+                        } else {
+                            console.log("Torch turned off.");
+                            // Here you can add additional logic if needed
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Failed to toggle torch:", error);
+                    });
+            } else {
+                console.error("Torch feature not supported in this browser");
+            }
+        }
+
+        // Attach event listener to "scan now" button
+        document.getElementById("scanNowButton").addEventListener("click", openScanner);
+
+        // Attach event listener to "torch" button
+        document.getElementById("torchButton").addEventListener("click", toggleTorch);
+    </script>
+</body>
+</html>
