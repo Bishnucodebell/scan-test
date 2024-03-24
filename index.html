@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
         integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
+
 <body>
     <style>
         * {
@@ -42,12 +44,13 @@
     </div>
     <div class="flex middle center" style="background-color: var(--primary-light);height: 50vh;">
         <div class="flex gap-1 middle">
-            <button id="scanNowButton">Scan Now</button>
+            <button id="scanNowButton" onclick="openScanner()">Scan Now</button>
             <div class="open-when-click-scan-now flex gap-1 middle">
-                <button id="torchButton" style="display: none;">Torch</button>
+                <button id="torchButton" style="display: none;" onclick="toggleTorch()">Torch</button> <!-- Torch button added here -->
             </div>
         </div>
     </div>
+
     <script>
         let qrCodeScanner;
         let torchEnabled = false;
@@ -110,30 +113,62 @@
 
         // Function to toggle torch
         function toggleTorch() {
-            if (!qrCodeScanner) {
-                console.error("QR Code scanner not initialized");
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.error("getUserMedia is not supported in this browser");
                 return;
             }
 
-            const track = qrCodeScanner.getMediaStream().getVideoTracks()[0];
-            const imageCapture = new ImageCapture(track);
+            // Get the environment camera (usually the second one)
+            navigator.mediaDevices.enumerateDevices().then(devices => {
+                const cameras = devices.filter((device) => device.kind === 'videoinput');
 
-            if (torchEnabled) {
-                imageCapture.setOptions({ fillLightMode: "off" });
-                torchEnabled = false;
-                console.log("Torch turned off");
-            } else {
-                imageCapture.setOptions({ fillLightMode: "torch" });
-                torchEnabled = true;
-                console.log("Torch turned on");
-            }
+                if (cameras.length === 0) {
+                    console.error('No camera found on this device.');
+                    return;
+                }
+
+                const camera = cameras[cameras.length - 1];
+
+                // Create stream and get video track
+                navigator.mediaDevices.getUserMedia({
+                    video: {
+                        deviceId: camera.deviceId,
+                        facingMode: ['user', 'environment'],
+                        height: { ideal: 1080 },
+                        width: { ideal: 1920 }
+                    }
+                }).then(stream => {
+                    const track = stream.getVideoTracks()[0];
+
+                    // Create image capture object and get camera capabilities
+                    const imageCapture = new ImageCapture(track);
+                    const photoCapabilities = imageCapture.getPhotoCapabilities().then(() => {
+                        // Let there be light!
+                        // Let there be light!
+                        if (torchEnabled) {
+                            track.applyConstraints({
+                                advanced: [{ torch: false }]
+                            }).then(() => {
+                                torchEnabled = false;
+                                console.log("Torch turned off");
+                            }).catch(error => {
+                                console.error("Failed to turn off torch:", error);
+                            });
+                        } else {
+                            track.applyConstraints({
+                                advanced: [{ torch: true }]
+                            }).then(() => {
+                                torchEnabled = true;
+                                console.log("Torch turned on");
+                            }).catch(error => {
+                                console.error("Failed to turn on torch:", error);
+                            });
+                        }
+                    });
+                });
+            });
         }
-
-        // Attach event listener to "scan now" button
-        document.getElementById("scanNowButton").addEventListener("click", openScanner);
-
-        // Attach event listener to "torch" button
-        document.getElementById("torchButton").addEventListener("click", toggleTorch);
     </script>
 </body>
+
 </html>
