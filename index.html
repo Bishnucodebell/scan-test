@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="layout.css">
     <link rel="stylesheet" href="codebell.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js" integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"
+        integrity="sha512-r6rDA7W6ZeQhvl8S7yRVQUKVHdexq+GAlNkNNqVC7YyIV+NwqCTJe2hDWCiffTyRNOeGEzRRJ9ifvRm/HCzGYg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
+
 <body>
     <style>
         * {
             margin: 0;
             padding: 0;
         }
+
         .fullscreen-scanner {
             position: fixed;
             top: 0;
@@ -23,6 +28,7 @@
             background-color: black;
             z-index: 1000;
         }
+
         .close-button {
             position: absolute;
             top: 10px;
@@ -36,7 +42,7 @@
     <div id="scannerContainer" class="fullscreen-scanner" style="display: none;">
         <div class="close-button" onclick="closeScanner()">Close</div>
     </div>
-    <div class=" flex middle center " style="background-color: var(--primary-light);height: 50vh;">
+    <div class="flex middle center" style="background-color: var(--primary-light);height: 50vh;">
         <div class="flex gap-1 middle">
             <button id="scanNowButton">Scan Now</button>
             <div class="open-when-click-scan-now flex gap-1 middle">
@@ -48,6 +54,17 @@
         let qrCodeScanner;
 
         function openScanner() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.error("getUserMedia is not supported in this browser");
+                return;
+            }
+
+            // Check if torch is supported by the browser
+            if (!('torch' in navigator.mediaDevices.getSupportedConstraints())) {
+                console.error("Torch is not supported by the camera");
+                return;
+            }
+
             // Display torch button
             document.getElementById("torchButton").style.display = "block";
 
@@ -94,52 +111,29 @@
 
         // Function to toggle torch
         function toggleTorch() {
-    // Check if torch is supported by the browser
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        // Get user media with video enabled
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then((stream) => {
-                // Get the video track
-                const track = stream.getVideoTracks()[0];
+            if (!('torch' in navigator.mediaDevices.getSupportedConstraints())) {
+                console.error("Torch is not supported by the camera");
+                return;
+            }
 
-                // Create an ImageCapture object
-                const imageCapture = new ImageCapture(track);
+            // Check if torch is supported by the browser
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then((stream) => {
+                    const track = stream.getVideoTracks()[0];
 
-                // Set the torch mode to true
-                const capabilities = track.getCapabilities();
-                if (capabilities.torch && capabilities.torch === true) {
-                    const settings = track.getSettings();
-                    settings.torch = true;
-                    track.applyConstraints(settings)
+                    // Toggle the torch
+                    track.applyConstraints({ advanced: [{ torch: !track.getSettings().torch }] })
                         .then(() => {
-                            console.log("Torch turned on.");
-                            // Stop the stream to turn off the torch after a short duration
-                            setTimeout(() => {
-                                track.applyConstraints({ advanced: [{ torch: false }] })
-                                    .then(() => {
-                                        console.log("Torch turned off.");
-                                    })
-                                    .catch((error) => {
-                                        console.error("Failed to turn off torch:", error);
-                                    });
-                            }, 2000); // Stop the torch after 2 seconds
+                            console.log("Torch toggled successfully");
                         })
                         .catch((error) => {
-                            console.error("Failed to turn on torch:", error);
+                            console.error("Failed to toggle torch:", error);
                         });
-                } else {
-                    console.error("Torch feature not supported by the camera track");
-                }
-            })
-            .catch((error) => {
-                console.error("Failed to access camera:", error);
-            });
-    } else {
-        console.error("getUserMedia not supported in this browser");
-    }
-}
-
-
+                })
+                .catch((error) => {
+                    console.error("Failed to access camera:", error);
+                });
+        }
 
         // Attach event listener to "scan now" button
         document.getElementById("scanNowButton").addEventListener("click", openScanner);
@@ -148,4 +142,5 @@
         document.getElementById("torchButton").addEventListener("click", toggleTorch);
     </script>
 </body>
+
 </html>
